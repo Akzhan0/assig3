@@ -1,34 +1,46 @@
 import controller.LibraryController;
 import dto.BookCreateDto;
 import model.BookBase;
-import utils.SchemaInitializer;
+import model.EBook;
+import model.PrintedBook;
+import utils.ReflectionUtils;
 
 public class Main {
-    public static void main(String[] args) {
 
-        SchemaInitializer.init();
+    public static void main(String[] args) {
 
         LibraryController controller = new LibraryController();
 
-        System.out.println("  CATEGORIES  ");
-        controller.listCategories().forEach(System.out::println);
-
+        // === CREATE ===
         BookCreateDto dto = new BookCreateDto();
-        dto.title = "Java for Beginners";
-        dto.price = 12.50;
-        dto.type = "EBOOK";
-        dto.fileSizeMb = 6.2;
-        dto.categoryId = 1;
+        dto.setTitle("Clean Code");
+        dto.setPrice(4500);
+        dto.setCategoryId(1);
+        dto.setType("PRINTED");
+        dto.setPages(350);
 
-        int newId = controller.createBook(dto);
-        System.out.println(" New book created, id=" + newId);
+        int id = controller.createBook(dto);
+        System.out.println("Created book id = " + id);
 
-        System.out.println("  BOOKS  ");
+        // === READ ===
+        System.out.println("=== ALL BOOKS ===");
         for (BookBase b : controller.listBooks()) {
-            b.printInfo();
+            System.out.println(b.shortInfo());
         }
+
+        // === REFLECTION ===
+        System.out.println("\n=== REFLECTION: EBook ===");
+        ReflectionUtils.printClassInfo(EBook.class);
+
+        System.out.println("\n=== REFLECTION: PrintedBook ===");
+        ReflectionUtils.printClassInfo(PrintedBook.class);
     }
 }
+
+
+
+
+
 
 
 

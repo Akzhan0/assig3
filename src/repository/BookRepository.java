@@ -1,5 +1,7 @@
 package repository;
 
+import exception.DatabaseOperationException;
+import exception.InvalidInputException;
 import model.*;
 import utils.DatabaseConnection;
 
@@ -11,8 +13,26 @@ import java.util.List;
 
 public class BookRepository {
 
-    // добавить EBook
-    public int createEBook(EBook book) {
+    // ====== CREATE (единый, читаемый) ======
+    public int create(BookBase book) {
+        if (book == null) {
+            throw new InvalidInputException("book is null");
+        }
+
+        if (book instanceof EBook) {
+            return createEBook((EBook) book);
+        }
+
+        if (book instanceof PrintedBook) {
+            return createPrintedBook((PrintedBook) book);
+        }
+
+        throw new InvalidInputException(
+                "Unknown book type: " + book.getClass().getSimpleName()
+        );
+    }
+
+    private int createEBook(EBook book) {
         String sql =
                 "INSERT INTO books(title, price, book_type, file_size_mb, pages, category_id) " +
                         "VALUES (?, ?, 'EBOOK', ?, NULL, ?) RETURNING book_id;";
@@ -30,16 +50,14 @@ public class BookRepository {
                     return rs.getInt("book_id");
                 }
             }
+            return -1;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new DatabaseOperationException("Failed to create EBook", e);
         }
-
-        return -1;
     }
 
-    // добавить PrintedBook
-    public int createPrintedBook(PrintedBook book) {
+    private int createPrintedBook(PrintedBook book) {
         String sql =
                 "INSERT INTO books(title, price, book_type, file_size_mb, pages, category_id) " +
                         "VALUES (?, ?, 'PRINTED', NULL, ?, ?) RETURNING book_id;";
@@ -57,15 +75,14 @@ public class BookRepository {
                     return rs.getInt("book_id");
                 }
             }
+            return -1;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new DatabaseOperationException("Failed to create PrintedBook", e);
         }
-
-        return -1;
     }
 
-    // получить все книги
+    // ====== READ ======
     public List<BookBase> findAll() {
         List<BookBase> list = new ArrayList<>();
 
@@ -85,28 +102,29 @@ public class BookRepository {
                 String catName = rs.getString("category_name");
                 Category category = new Category(catId, catName);
 
-                // base fields
+                // base
                 int id = rs.getInt("book_id");
                 String title = rs.getString("title");
                 double price = rs.getDouble("price");
                 String type = rs.getString("book_type");
 
-                // create correct object
                 if ("EBOOK".equals(type)) {
                     double size = rs.getDouble("file_size_mb");
-                    EBook eb = new EBook(id, title, price, category, size);
-                    list.add(eb);
+                    list.add(new EBook(id, title, price, category, size));
                 } else {
                     int pages = rs.getInt("pages");
-                    PrintedBook pb = new PrintedBook(id, title, price, category, pages);
-                    list.add(pb);
+                    list.add(new PrintedBook(id, title, price, category, pages));
                 }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            return list;
 
-        return list;
-    }
-}
+        } catch (Exception e) {
+            throw new DatabaseOperationException("Failed to fetch books", e);
+        }
+    }}
+
+
+
+
+
