@@ -15,7 +15,7 @@ public abstract class   BookBase {
         this.category = category;
     }
 
-    // Assignment 4: минимум 2 abstract methods
+    // 2 abstract methods
     public abstract String getType();
     public abstract void validate();
 
