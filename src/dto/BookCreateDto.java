@@ -3,9 +3,9 @@ package dto;
 public class BookCreateDto {
     private String title;
     private double price;
-    private String type;       // "EBOOK" или "PRINTED"
-    private double fileSizeMb; // для EBOOK
-    private int pages;         // для PRINTED
+    private String type;       
+    private double fileSizeMb; 
+    private int pages;         
     private int categoryId;
 
     public BookCreateDto() {}
